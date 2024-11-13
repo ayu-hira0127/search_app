@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="{% static 'css/base.css' %}" rel="stylesheet"> 
+        <title>Document</title>
+    </head>
+    <body>
+        <header>
+            <a href="{% url 'search_view' %}" class="btn btn-secondary">Top</a> 
+
+            <a href="{% url 'product_create' %}">作成</a>
+
+
+            <div class="hamburger-menu" id="menu-toggle">
+                <img src="{% static 'img/search.png' %}" alt="" style="width: 13%;">
+            </div>
+
+            <nav id="menu">
+                <div class="close-button" id="close-menu" ><img src="{% static 'img/search_close.png' %}" alt=""></div>
+                <form method="get">
+                    {{ form.as_p }}
+                    <div class="search_contents">
+                        <label for="category">カテゴリ:</label>
+                        <select name="category">
+                            <option value="">すべて</option>
+                            <option value="本">本</option>
+                            <option value="電子機器">電子機器</option>
+                        </select>
+                    </div>
+                    <div class="search_contents">
+                        <label for="min_price">最低価格:</label>
+                        <input type="number" name="min_price" min="0"><br>
+                    </div>
+                    <div class="search_contents">
+                        <label for="max_price">最高価格:</label>
+                        <input type="number" name="max_price" min="0">
+                    </div>
+                    <div class="search_contents">
+                        <label for="sort">並び替え:</label>
+                        <select name="sort">
+                            <option value="name">名前順</option>
+                            <option value="price_asc">価格が安い順</option>
+                            <option value="price_desc">価格が高い順</option>
+                        </select>
+                    </div>
+                    <button type="submit">検索</button>
+                </form>
+            </nav>
+        </header>
+
+        
+
+
+        {% block body %}
+        {% endblock body %}
+
+        <script src="{% static 'js/search.js' %}"></script>
+
+    </body>
+</html>

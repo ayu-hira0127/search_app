@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+{% block body %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>商品詳細</title>
+
+<link rel="stylesheet" href="{% static 'css/reset.css' %}">
+<link rel="stylesheet" href="{% static 'css/detail.css' %}">
+</head>
+<body>
+    <img src="{% static 'img/土星、木星のアイコン.png' %}" class="image1">
+    <img src="{% static 'img/火星人のフリーイラスト2.png' %}" class="image2">
+    <div class="boxs1">
+        <div class="box"></div>
+        <div class="card-body">
+            <h2 class="card-title">{{ product.name }}</h2>
+            <p class="card-text">{{ product.description }}</p>
+            <p class="card-text"><strong>{{ product.price|floatformat:0|intcomma }}円</strong></p>
+            
+            <!-- ボタンの配置 -->
+            <div class="buttons">
+                <a href="{% url 'product_update' product.pk %}" class="btn btn-secondary">編集</a>
+                <button type="submit" class="btn btn-danger">削除</button>
+                    <form action="{% url 'product_delete' product.pk %}" method="POST" onsubmit="return confirm('本当に削除しますか?');">
+                    {% csrf_token %}
+                    </form>
+
+                <!-- <a href="{% url 'product_list' %}" class="btn btn-primary">商品一覧に戻る</a>  -->
+            </div>
+        </div>
+    </div>
+{% endblock body %}
