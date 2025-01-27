@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+{% block body %}
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">出品リスト</h1>
+    <ul class="search_result">
+        {% for product in products %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <div>
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="goods_img">
+                    {% else %}
+                        <img src="{% static 'img/noImg.jpg' %}" alt="Default Image" class="goods_img">
+                    {% endif %}
+                </div>
+                <h5>{{ product.name }}</h5>
+                <p>¥{{ product.price|floatformat:0|intcomma }}</p>
+            </div>
+            <div>
+                <a href="{% url 'search_app:product_detail' product.pk %}" class="btn btn-primary me-2">詳細</a>
+                <a href="{% url 'search_app:product_update' product.pk %}" class="btn btn-warning me-2">編集</a>
+                <form action="{% url 'search_app:product_delete' product.pk %}" method="POST" onsubmit="return confirm('本当に削除しますか?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">削除</button>
+                </form>
+            </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item">出品された商品はありません。</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock body %}

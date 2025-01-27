@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+{% block body %}
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>お気に入り一覧</title>
+  <!-- Bootstrap CSS -->
+  <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+  <!-- Custom CSS -->
+  <!-- <style>
+    .goods_img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+    }
+  </style> -->
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">お気に入り一覧</h1>
+    <!-- お気に入りリスト -->
+    <ul class="list-group">
+      {% for favorite in favorites %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{% url 'search_app:product_detail' favorite.product.id %}" class="btn btn-primary me-2">
+            <div>
+              <div>
+                <img class="goods_img" src="{% if favorite.product.images.all.count > 0 %}{{ favorite.product.images.all.0.image.url }}{% else %}{% static 'img/noImg.jpg' %}{% endif %}" alt="{{ favorite.product.name }}">
+              </div>
+              <h5>{{ favorite.product.name }}</h5>
+              <p>¥{{ favorite.product.price|floatformat:0|intcomma }}</p>
+            </div>
+          </a>
+          <div>
+            <!-- お気に入り削除ボタン -->
+            <form action="{% url 'search_app:favorite_product' favorite.product.id %}" method="POST" style="display:inline;" onsubmit="return confirm('本当にお気に入りから削除しますか？');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">削除</button>
+            </form>
+          </div>
+        </li>
+      </a>
+      {% empty %}
+      <li class="list-group-item">お気に入りに追加された商品はありません。</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{% endblock body %}

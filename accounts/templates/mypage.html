@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+{% block body %}
+<head>
+    <meta charset="UTF-8">
+    <title>My Page</title>
+</head>
+<body>
+    <h1>{{ user.username }}</h1>
+    <p>Email: {{ user.email }}</p>
+    <!-- 他のユーザー情報をここに追加 -->
+    <a href="{% url 'accounts:logout' %}">ログアウト</a>
+
+    <a href="{% url 'search_app:exhibited_list' %}">出品した商品</a>
+    <a href="{% url 'search_app:product_create' %}">出品する</a>
+</body>
+</html>
+
+{% endblock body %}

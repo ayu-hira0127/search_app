@@ -1,8 +1,7 @@
-{% extends 'base/base.html' %}
+{% extends 'base.html' %}
 {% block body %}
     <div class="todo">
         <div class="todo_content">
-            <h1 style="font-size: 2vw; background-color: #eabab9; margin: 0; padding: 18px  0; color: white;">LOGIN</h1>
             <form method="post">
                 {% csrf_token %}
                 
@@ -15,14 +14,6 @@
                 </div>
 
                 <div class="form-group">
-                    <h3 for="{{ form.email.id_for_label }}">パスワード</h3>
-                    {{ form.email }}
-                    {% if form.email.errors %}
-                        <div class="error">{{ form.email.errors }}</div>
-                    {% endif %}
-                </div>
-                
-                <div class="form-group">
                     <h3 for="{{ form.password.id_for_label }}">パスワード</h3>
                     {{ form.password }}
                     {% if form.password.errors %}
@@ -31,8 +22,29 @@
                 </div>
 
                 <button type="submit" class="btn">Login</button>
+                <div class="signup-btn">
+                    <p>会員登録をされていない方</p>
+                    <a href="{% url 'accounts:signup' %}">新規登録</a>
+
+                </div>
+                
+
             </form>
         </div>
     </div>
+
+<style>
+.todo {
+    width: 80%;
+    margin: auto;
+    text-align: center;
+    height: 100%;
+}
+.signup-btn{
+    margin-top: 32px;
+    border-top: solid 1px;
+}
+
+</style>
 
 {% endblock %}

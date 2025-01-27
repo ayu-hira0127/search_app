@@ -1,63 +1,158 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ja">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="{% static 'css/base.css' %}" rel="stylesheet"> 
-        <title>Document</title>
-    </head>
-    <body>
-        <header>
-            <a href="{% url 'search_view' %}" class="btn btn-secondary">Top</a> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'css/base.css' %}" rel="stylesheet">
+    <link href="{% static 'css/goods.css' %}" rel="stylesheet"> 
+    <link href="{% static 'css/kv.css' %}" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <title>Document</title>
 
-            <a href="{% url 'product_create' %}">作成</a>
+    <style>
+        /* モーダルのスタイル */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; /* z-index を設定して、他の要素よりも前に表示 */
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgb(0,0,0); 
+            background-color: rgba(0,0,0,0.4); 
+            display: flex; /* フレックスボックスを使用 */
+            justify-content: center; /* 水平中央寄せ */
+            align-items: center; /* 垂直中央寄せ */
+        }
 
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px; 
+            border: 1px solid #888; 
+            width: 80%; 
+            max-width: 500px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
 
-            <div class="hamburger-menu" id="menu-toggle">
-                <img src="{% static 'img/search.png' %}" alt="" style="width: 13%;">
-            </div>
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
 
-            <nav id="menu">
-                <div class="close-button" id="close-menu" ><img src="{% static 'img/search_close.png' %}" alt=""></div>
-                <form method="get">
-                    {{ form.as_p }}
-                    <div class="search_contents">
-                        <label for="category">カテゴリ:</label>
-                        <select name="category">
-                            <option value="">すべて</option>
-                            <option value="本">本</option>
-                            <option value="電子機器">電子機器</option>
-                        </select>
-                    </div>
-                    <div class="search_contents">
-                        <label for="min_price">最低価格:</label>
-                        <input type="number" name="min_price" min="0"><br>
-                    </div>
-                    <div class="search_contents">
-                        <label for="max_price">最高価格:</label>
-                        <input type="number" name="max_price" min="0">
-                    </div>
-                    <div class="search_contents">
-                        <label for="sort">並び替え:</label>
-                        <select name="sort">
-                            <option value="name">名前順</option>
-                            <option value="price_asc">価格が安い順</option>
-                            <option value="price_desc">価格が高い順</option>
-                        </select>
-                    </div>
-                    <button type="submit">検索</button>
-                </form>
-            </nav>
-        </header>
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <a href="{% url 'search_app:search_view' %}" class="btn btn-secondary">Top</a>
 
-        
+    {% if user.is_authenticated %}
+    <a href="{% url 'accounts:mypage' %}">
+        <img src="{% static '/img/人物のアイコン素材 その3.png' %}" alt="">
+    </a>
+    {% else %}
+    <a href="{% url 'accounts:login' %}">
+        <img src="{% static '/img/人物のアイコン素材 その3.png' %}" alt="">
+    </a>
+    {% endif %}
+    <a href="{% url 'search_app:view_cart' %}">
+        <img src="{% static '/img/ショッピングカートの無料アイコン10.png' %}" alt="">
+    </a>
 
+    <a href="{% url 'search_app:favorite_list' %}">
+        <img src="{% static '/img/hurt.png' %}" alt="">
+    </a>
 
-        {% block body %}
-        {% endblock body %}
+    <div class="hamburger-menu" id="menu-toggle">
+        <img src="{% static 'img/search.png' %}" alt="" style="width: 13%;">
+    </div>
+</header>
 
-        <script src="{% static 'js/search.js' %}"></script>
+<!-- モーダル -->
+<!-- モーダル -->
+<div id="menu-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" id="close-menu">&times;</span>
+        <nav id="menu">
+            <form method="get" id="search-form">
+                {{ form.as_p }}
+                <div class="search_contents">
+                    <label for="category">カテゴリ:</label>
+                    <select name="category">
+                        <option value="トップス">トップス</option>
+                        <option value="ボトムス">ボトムス</option>
+                        <option value="アクセサリー">アクセサリー</option>
+                        <option value="アウター">アウター</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+                <div class="search_contents">
+                    <label for="min_price">最低価格:</label>
+                    <input type="number" name="min_price" min="0"><br>
+                </div>
+                <div class="search_contents">
+                    <label for="max_price">最高価格:</label>
+                    <input type="number" name="max_price" min="0">
+                </div>
+                <div class="search_contents">
+                    <label for="sort">並び替え:</label>
+                    <select name="sort">
+                        <option value="name">名前順</option>
+                        <option value="price_asc">価格が安い順</option>
+                        <option value="price_desc">価格が高い順</option>
+                    </select>
+                </div>
+                <button type="submit">検索</button>
+            </form>
+        </nav>
+    </div>
+</div>
 
-    </body>
+{% block body %}
+{% endblock body %}
+
+<script>
+document.getElementById('menu-toggle').addEventListener('click', function(event) {
+    event.stopPropagation(); // メニュー以外のクリックで閉じるためにバブルを止める
+    var modal = document.getElementById('menu-modal');
+    modal.style.display = 'flex';
+});
+
+document.getElementById('close-menu').addEventListener('click', function() {
+    var modal = document.getElementById('menu-modal');
+    modal.style.display = 'none';
+});
+
+// メニュー以外の部分をクリックするとメニューを閉じる
+window.addEventListener('click', function(event) {
+    var modal = document.getElementById('menu-modal');
+
+    if (modal.style.display === 'flex' && !modal.children[0].contains(event.target)) {
+        modal.style.display = 'none';
+    }
+});
+
+// 検索ボタンをクリックした場合にモーダルを閉じる
+document.getElementById('search-form').addEventListener('submit', function() {
+    var modal = document.getElementById('menu-modal');
+    modal.style.display = 'none';
+});
+</script>
+
+<script src="{% static 'js/search.js' %}"></script>
+
+</body>
 </html>

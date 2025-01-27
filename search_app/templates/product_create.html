@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block body %}
+<body>
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <h2 class="text-center mb-4">商品{% if product.id %}編集{% else %}作成{% endif %}</h2>
+        <!-- 商品フォーム -->
+        <form method="POST" class="bg-light p-4 rounded shadow-sm" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <div class="form-group">
+            <label for="id_images">画像</label>
+            <input type="file" name="images" multiple class="form-control" id="id_images"/>
+          </div>
+          <div class="d-flex justify-content-between mt-3">
+            <!-- 保存ボタン -->
+            <button type="submit" class="btn btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+{% endblock body %}
+</html>
