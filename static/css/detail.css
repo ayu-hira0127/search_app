@@ -1,9 +1,13 @@
-.goods_body{
+
+.goods_body {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 35px;
+    list-style-type: none;
+    margin: 30px auto 0 auto;
     width: 80%;
-    margin: 30px auto;
-    display: flex;
-    justify-content: space-around;
 }
+
 .fixed_btn{
     display: flex;
     justify-content: center;

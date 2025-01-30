@@ -2,27 +2,244 @@
 {% load humanize %}
 
 {% block body %}
-<body>
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <h2 class="text-center mb-4">商品{% if product.id %}編集{% else %}作成{% endif %}</h2>
-        <!-- 商品フォーム -->
-        <form method="POST" class="bg-light p-4 rounded shadow-sm" enctype="multipart/form-data">
-          {% csrf_token %}
-          {{ form.as_p }}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <h2 class="text-center mb-4">商品{% if object.pk %}編集{% else %}作成{% endif %}</h2>
+      <form method="POST" class="bg-light p-4 rounded shadow-sm" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if images %}
+        <div id="existing_images" class="flex-wrap mb-3">
+          {% for image in images %}
+            <div class="img-thumbnail position-relative">
+              <img src="{{ image.image.url }}" style="max-width: 150px; max-height: 150px;">
+              <button type="submit" name="delete_image" value="{{ image.id }}" class="btn btn-danger position-absolute top-0 end-0" style="transform: translate(50%, -50%);">&times;</button>
+            </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+          
+        <div id="image_preview" class="flex-wrap mb-3"></div>
+        <div id="inputFile">
+          <div id="dropArea" class="text-center">
+            <p>ここにファイルをドロップしてください<br>または</p>
+            <div id="inputFileWrap" class="mt-2">
+              <input type="file" name="images" multiple class="form-control" id="id_images" accept="image/*">
+              <div id="btnInputFile" class="btn btn-primary">ファイルを選択する</div>
+              <div id="btnChangeFile" class="btn btn-secondary" style="display: none;">ファイルを変更する</div>
+            </div>
+          </div>
+        </div>
+        <p class="text-muted">最大10枚までアップロード可能です。</p>
+
+        <div class="text_form">
           <div class="form-group">
-            <label for="id_images">画像</label>
-            <input type="file" name="images" multiple class="form-control" id="id_images"/>
+            <label for="{{ form.name.id_for_label }}">商品名</label>
+            {{ form.name }}
           </div>
-          <div class="d-flex justify-content-between mt-3">
-            <!-- 保存ボタン -->
-            <button type="submit" class="btn btn-primary">保存</button>
+          <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">商品説明</label>
+            {{ form.description }}
           </div>
-        </form>
-      </div>
+          <div class="form-group">
+            <label for="{{ form.price.id_for_label }}">価格</label>
+            {{ form.price }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.category.id_for_label }}">カテゴリ</label>
+            {{ form.category }}
+          </div>
+          
+          <div class="mt-3">
+            <button type="submit" class="btn btn-primary list-btn">出品する</button>
+          </div>
+        </div>
+      </form>
     </div>
   </div>
-</body>
-{% endblock body %}
-</html>
+</div>
+
+
+<script>
+  let uploadedFiles = [];
+
+  const fileArea = document.getElementById('dropArea');
+  const fileInput = document.getElementById('id_images');
+  const imagePreviewContainer = document.getElementById('image_preview');
+  const btnInputFile = document.getElementById('btnInputFile');
+  const btnChangeFile = document.getElementById('btnChangeFile');
+
+  btnInputFile.addEventListener('click', function() {
+    fileInput.click();
+  });
+  
+  btnChangeFile.addEventListener('click', function() {
+    fileInput.click();
+  });
+
+  fileArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    fileArea.classList.add('dragover');
+  });
+
+  fileArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    fileArea.classList.remove('dragover');
+  });
+
+  fileArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    fileArea.classList.remove('dragover');
+
+    var files = e.dataTransfer.files;
+
+    if (files.length > 0) {
+      Array.from(files).forEach(file => {
+        if (!file.type.startsWith('image/')) {
+          return;
+        }
+
+        uploadedFiles.push(file);
+        displayPreviewImage(file, imagePreviewContainer);
+      });
+
+      if (uploadedFiles.length > 0) {
+        btnInputFile.style.display = 'none';
+        btnChangeFile.style.display = 'block';
+      }
+    }
+  });
+
+  fileInput.addEventListener('change', function(e) {
+    const files = e.target.files;
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) {
+        return;
+      }
+
+      uploadedFiles.push(file);
+      displayPreviewImage(file, imagePreviewContainer);
+    });
+
+    if (uploadedFiles.length > 0) {
+      btnInputFile.style.display = 'none';
+      btnChangeFile.style.display = 'block';
+    }
+  }, false);
+
+  function displayPreviewImage(file, container) {
+    const imgWrapper = document.createElement('div');
+    imgWrapper.classList.add('img-thumbnail', 'm-2', 'position-relative');
+
+    const img = document.createElement('img');
+    img.style.maxWidth = '150px';
+    img.style.maxHeight = '150px';
+
+    imgWrapper.appendChild(img);
+    container.appendChild(imgWrapper);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+
+    const deleteButton = document.createElement('button');
+    deleteButton.innerHTML = '&times;';
+    deleteButton.classList.add('btn', 'btn-danger', 'position-absolute', 'top-0', 'right-0');
+    deleteButton.style.transform = 'translate(0%, 0%)';
+    deleteButton.addEventListener('click', () => {
+      uploadedFiles = uploadedFiles.filter(f => f !== file);
+      container.removeChild(imgWrapper);
+      if (uploadedFiles.length === 0) {
+        btnInputFile.style.display = 'block';
+        btnChangeFile.style.display = 'none';
+      }
+    });
+
+    imgWrapper.appendChild(deleteButton);
+  }
+</script>
+
+<style>
+  .text-center {
+    text-align: center;
+  }
+  #btnInputFile {
+    background: #7a615a;
+    color: white;
+    width: 16vw;
+    margin: auto;
+    padding: 5px;
+  }
+
+  #inputFile {
+    text-align: center;
+  }
+
+  #dropArea {
+    border: 1px dashed #b5a5a0;
+    padding: 20px;
+    background: rgba(22, 165, 191, 0);
+    transition: all 0.25s cubic-bezier(0.21, 0.51, 0.51, 1);
+  }
+
+  #dropArea.dragover {
+    border: 2px solid #16a5bf;
+    background: rgba(22, 165, 191, 0.6);
+  }
+
+  .text_form{
+    text-align: center;
+  }
+
+  #id_name, #id_description, #id_price, #id_category {
+    width: 100%;
+  }
+
+  #id_name {
+    height: 40px;
+  }
+
+  .list-btn {
+    margin: 10% 0;
+    width: 50%;
+    padding: 16px;
+    background-color: #f9c5b8;
+    color: white;
+    font-weight: bold;
+  }
+
+  .bg-light {
+    width: 50%;
+    margin: auto;
+  }
+
+  .btn-file-select {
+    display: inline-block;
+    margin-top: 10px;
+  }
+
+  #id_images {
+    display: none;
+  }
+
+  #image_preview {
+    display: flex;
+    gap: 10px;
+    overflow: auto;
+  }
+
+  #image_preview .img-thumbnail {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  #existing_images {
+    display: flex;
+    gap: 10px;
+    overflow: auto;
+  }
+</style>
+{% endblock %}

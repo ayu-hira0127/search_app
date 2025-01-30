@@ -4,12 +4,10 @@ from django.views import View
 from django.views.generic import CreateView, DetailView, UpdateView, DeleteView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
-
-from .models import Product, Category, Favorite, Cart, PurchaseHistory
-from .forms import ProductForm, SearchForm
 from django.core.paginator import Paginator
-from .models import Product, ProductImage
-from .forms import ProductForm
+
+from .models import Product, Category, Favorite, Cart, PurchaseHistory, ProductImage
+from .forms import ProductForm, SearchForm
 
 class ExhibitedListView(LoginRequiredMixin, ListView):
     model = Product
@@ -70,6 +68,8 @@ class ProductDetailView(DetailView):
             context['is_favorited'] = Favorite.objects.filter(user=self.request.user, product=product).exists()
         else:
             context['is_favorited'] = False
+
+        context['images'] = product.images.all()
         
         return context
 
@@ -79,16 +79,35 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'product_create.html'
 
     def form_valid(self, form):
-        form.instance.user = self.request.user
         response = super().form_valid(form)
+
+        # 既存の画像を削除
+        if 'delete_image' in self.request.POST:
+            image_id = self.request.POST.get('delete_image')
+            ProductImage.objects.filter(id=image_id).delete()
+
+        # 新しい画像を保存
         images = self.request.FILES.getlist('images')
         for image in images:
             ProductImage.objects.create(product=self.object, image=image)
+
         return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['images'] = ProductImage.objects.filter(product=self.object)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if 'delete_image' in request.POST:
+            image_id = request.POST.get('delete_image')
+            ProductImage.objects.filter(id=image_id).delete()
+            return redirect('search_app:product_update', pk=self.get_object().pk)
+        return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('search_app:product_detail', kwargs={'pk': self.object.pk})
-
+    
 class ProductDeleteView(LoginRequiredMixin, DeleteView):
     model = Product
     template_name = 'product_confirm_delete.html'
@@ -103,7 +122,7 @@ class SearchView(View):
         if form.is_valid():
             query = form.cleaned_data['query']
             if query:
-                results = results.filter(name__icontains=query)
+                results = results.filter(name__icontains(query))
         category_name = request.GET.get('category')
         if category_name:
             try:
@@ -114,9 +133,9 @@ class SearchView(View):
         min_price = request.GET.get('min_price')
         max_price = request.GET.get('max_price')
         if min_price:
-            results = results.filter(price__gte=min_price)
+            results = results.filter(price__gte(min_price))
         if max_price:
-            results = results.filter(price__lte=max_price)
+            results = results.filter(price__lte(max_price))
         sort_by = request.GET.get('sort', 'name')
         if sort_by == 'price_asc':
             results = results.order_by('price')

@@ -1,16 +1,11 @@
 /* 商品 */
-.goods_img {
-    /* width: 100%; */
-    height: 20vh;
-    /* list-style: none; */
-    object-fit: cover;
-}
-.list-group-item {
+
+/* .list-group-item {
     list-style: none;
-}
+    text-align: center;
+} */
 
 .product_item {
-
     text-align: center;
     background-color: white;
     color: black;

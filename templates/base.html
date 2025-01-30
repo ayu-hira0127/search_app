@@ -1,4 +1,4 @@
-{% load static %}
+{% load static %}  
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -12,23 +12,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
     <title>Document</title>
-
     <style>
-        /* モーダルのスタイル */
         .modal {
             display: none; 
             position: fixed; 
-            z-index: 1000; /* z-index を設定して、他の要素よりも前に表示 */
+            z-index: 1000; 
             left: 0; 
             top: 0; 
             width: 100%; 
             height: 100%; 
             overflow: auto; 
-            background-color: rgb(0,0,0); 
             background-color: rgba(0,0,0,0.4); 
-            display: flex; /* フレックスボックスを使用 */
-            justify-content: center; /* 水平中央寄せ */
-            align-items: center; /* 垂直中央寄せ */
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
         }
 
         .modal-content {
@@ -53,21 +50,70 @@
             text-decoration: none;
             cursor: pointer;
         }
+
+        .search_contents {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .search_contents label {
+            flex: 1;
+            text-align: left;
+            padding-right: 10px;
+        }
+
+        .search_contents input,
+        .search_contents select {
+            flex: 2;
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+            border: solid 1px #AE8D84;
+        }
+
+        .price_box {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            flex: 2;
+        }
+
+        .price_box input {
+            width: 100%;
+        }
+
+        .price_box span {
+            width: auto;
+            padding: 0 5px;
+        }
+
+        .search-btn {
+            display: block;
+            width: 80%;
+            margin: 30px auto 0; /*上下左右のマージンを調整*/
+            background-color: #f9c5b8;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 <header>
-    <a href="{% url 'search_app:search_view' %}" class="btn btn-secondary">Top</a>
+    <a href="{% url 'search_app:search_view' %}" class="btn-secondary">Top</a>
 
     {% if user.is_authenticated %}
-    <a href="{% url 'accounts:mypage' %}">
-        <img src="{% static '/img/人物のアイコン素材 その3.png' %}" alt="">
-    </a>
+        <a href="{% url 'accounts:mypage' %}">
+            <img src="{% static '/img/人物のアイコン素材 その3.png' %}" alt="">
+        </a>
     {% else %}
-    <a href="{% url 'accounts:login' %}">
-        <img src="{% static '/img/人物のアイコン素材 その3.png' %}" alt="">
-    </a>
+        <a href="{% url 'accounts:login' %}">
+            <img src="{% static '/img/人物のアイコン素材 その3.png' %}" alt="">
+        </a>
     {% endif %}
+
     <a href="{% url 'search_app:view_cart' %}">
         <img src="{% static '/img/ショッピングカートの無料アイコン10.png' %}" alt="">
     </a>
@@ -82,16 +128,19 @@
 </header>
 
 <!-- モーダル -->
-<!-- モーダル -->
 <div id="menu-modal" class="modal" style="display: none;">
     <div class="modal-content">
         <span class="close" id="close-menu">&times;</span>
         <nav id="menu">
             <form method="get" id="search-form">
-                {{ form.as_p }}
                 <div class="search_contents">
-                    <label for="category">カテゴリ:</label>
-                    <select name="category">
+                    <label for="query">検索キーワード</label>
+                    <input type="text" id="query" name="query" placeholder="検索したいキーワードを入力">
+                </div>
+                <div class="search_contents">
+                    <label for="category">カテゴリ</label>
+                    <select name="category" id="category">
+                        <option value="">絞り込みをしない</option>
                         <option value="トップス">トップス</option>
                         <option value="ボトムス">ボトムス</option>
                         <option value="アクセサリー">アクセサリー</option>
@@ -100,22 +149,25 @@
                     </select>
                 </div>
                 <div class="search_contents">
-                    <label for="min_price">最低価格:</label>
-                    <input type="number" name="min_price" min="0"><br>
+                    <label for="min_price max_price">価格</label>
+                    <div class="price_box">
+                        <input type="number" name="min_price" id="min_price" min="0">
+                        <span>~</span>
+                        <input type="number" name="max_price" id="max_price" min="0">
+                    </div>
                 </div>
                 <div class="search_contents">
-                    <label for="max_price">最高価格:</label>
-                    <input type="number" name="max_price" min="0">
                 </div>
                 <div class="search_contents">
-                    <label for="sort">並び替え:</label>
-                    <select name="sort">
+                    <label for="sort">並び替え</label>
+                    <select name="sort" id="sort">
                         <option value="name">名前順</option>
                         <option value="price_asc">価格が安い順</option>
                         <option value="price_desc">価格が高い順</option>
                     </select>
                 </div>
-                <button type="submit">検索</button>
+                <button type="submit" class="search-btn">検索</button>
+                <button type="button" id="clear-btn" class="search-btn">クリア</button>
             </form>
         </nav>
     </div>
@@ -126,9 +178,16 @@
 
 <script>
 document.getElementById('menu-toggle').addEventListener('click', function(event) {
-    event.stopPropagation(); // メニュー以外のクリックで閉じるためにバブルを止める
+    event.stopPropagation(); 
     var modal = document.getElementById('menu-modal');
     modal.style.display = 'flex';
+    // クエリパラメータを取得してフォームを更新
+    var urlParams = new URLSearchParams(window.location.search);
+    document.getElementById('query').value = urlParams.get('query') || '';
+    document.getElementById('category').value = urlParams.get('category') || '';
+    document.getElementById('min_price').value = urlParams.get('min_price') || '';
+    document.getElementById('max_price').value = urlParams.get('max_price') || '';
+    document.getElementById('sort').value = urlParams.get('sort') || 'name';
 });
 
 document.getElementById('close-menu').addEventListener('click', function() {
@@ -136,7 +195,6 @@ document.getElementById('close-menu').addEventListener('click', function() {
     modal.style.display = 'none';
 });
 
-// メニュー以外の部分をクリックするとメニューを閉じる
 window.addEventListener('click', function(event) {
     var modal = document.getElementById('menu-modal');
 
@@ -145,10 +203,17 @@ window.addEventListener('click', function(event) {
     }
 });
 
-// 検索ボタンをクリックした場合にモーダルを閉じる
 document.getElementById('search-form').addEventListener('submit', function() {
     var modal = document.getElementById('menu-modal');
     modal.style.display = 'none';
+});
+
+document.getElementById('clear-btn').addEventListener('click', function() {
+    document.getElementById('query').value = '';
+    document.getElementById('category').selectedIndex = 0;
+    document.getElementById('min_price').value = '';
+    document.getElementById('max_price').value = '';
+    document.getElementById('sort').selectedIndex = 0;
 });
 </script>
 
