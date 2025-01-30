@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 class CustomUser(AbstractUser):
-    # 他のフィールドの定義
+    email = models.EmailField(unique=True)  # メールアドレスフィールドの追加
     groups = models.ManyToManyField(
         'auth.Group',
         related_name='customuser_set',  # ここでrelated_nameを指定
