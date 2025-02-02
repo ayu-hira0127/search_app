@@ -15,6 +15,7 @@
             flex-direction: row;
             justify-content: space-between;
             padding: 20px;
+            height: 100vh;
         }
 
         .image-section {
@@ -166,6 +167,21 @@
         }
         .cart_btn:hover{
             opacity: 0.7;
+        }
+        @media (max-width: 500px){
+        .container{
+            display: block;;
+        }
+
+        .add_cart_btn {
+            justify-content: center;
+        }
+
+        .details-section{
+            padding: 0;
+            text-align: center;
+        }
+
         }
     </style>
 </head>

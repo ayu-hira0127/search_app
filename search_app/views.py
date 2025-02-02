@@ -54,8 +54,36 @@ class ProductCreateView(CreateView):
 
         for file in self.request.FILES.getlist('images'):
             ProductImage.objects.create(product=self.object, image=file)
+        
+        # フォームのデータをセッションに保存
+        self.request.session['product_data'] = {
+            'name': form.cleaned_data['name'],
+            'description': form.cleaned_data['description'],
+            'price': str(form.cleaned_data['price']),
+            'category': form.cleaned_data['category'].id
+        }
 
         return response
+
+    def get_initial(self):
+        initial = super().get_initial()
+        # セッションからデータを取得して初期値として設定
+        if 'product_data' in self.request.session:
+            product_data = self.request.session['product_data']
+            initial.update({
+                'name': product_data['name'],
+                'description': product_data['description'],
+                'price': product_data['price'],
+                'category': product_data['category']
+            })
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # 表示用のカテゴリーリストを追加（もし必要なら）
+        from .models import Category
+        context['categories'] = Category.objects.all()
+        return context
     
 class ProductDetailView(DetailView):
     model = Product

@@ -99,9 +99,16 @@
                 {% if request.user.is_authenticated %}
                 <form class="favoriteForm" action="{% url 'search_app:favorite_product' product.pk %}" method="POST">
                     {% csrf_token %}
-                    <button type="submit" class="btn favorite-btn">
-                        <i class="favoriteIcon {% if product.is_favorited %}fas fa-heart favorited{% else %}far fa-heart{% endif %}"></i>
-                    </button>
+                    <!-- お気に入りアイコン表示のために追加  -->
+                    {% if product.is_favorited %}
+                        <button type="submit" class="btn favorite-btn favorited">
+                            <i class="favoriteIcon fas fa-heart favorited"></i>
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn favorite-btn">
+                            <i class="favoriteIcon far fa-heart"></i>
+                        </button>
+                    {% endif %}
                 </form>
                 {% endif %}
             </li>

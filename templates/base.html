@@ -106,6 +106,9 @@
             margin: 0;
             padding: 0;
             background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         .menu {
@@ -190,6 +193,21 @@
                 display: block;
             }
         }
+
+        .footer {
+            background-color: #f9c5b8;
+            color: #333;
+            text-align: center;
+            padding: 10px;
+            flex-shrink: 0;
+        }
+
+        .container.mt-5{
+            height: 100vh;
+        }
+
+        
+
     </style>
 </head>
 <body>
@@ -346,6 +364,10 @@ document.getElementById('hamburger').addEventListener('click', function() {
 </script>
 
 <script src="{% static 'js/search.js' %}"></script>
+
+<footer class="footer">
+    <p>&copy; 2025  Company. All rights reserved.</p>
+</footer>
 
 </body>
 </html>
