@@ -9,9 +9,9 @@
       <form method="POST" class="bg-light p-4 rounded shadow-sm" enctype="multipart/form-data">
         {% csrf_token %}
         {% if images %}
-        <div id="existing_images" class="flex-wrap mb-3">
+        <div id="existing_images" class="d-flex flex-wrap mb-3">
           {% for image in images %}
-            <div class="img-thumbnail position-relative">
+            <div class="img-thumbnail position-relative mx-1">
               <img src="{{ image.image.url }}" style="max-width: 150px; max-height: 150px;">
               <button type="submit" name="delete_image" value="{{ image.id }}" class="btn btn-danger position-absolute top-0 end-0" style="transform: translate(50%, -50%);">&times;</button>
             </div>
@@ -19,14 +19,15 @@
         </div>
         {% endif %}
           
-        <div id="image_preview" class="flex-wrap mb-3"></div>
+        <div id="image_preview" class="d-flex flex-wrap mb-3"></div>
         <div id="inputFile">
           <div id="dropArea" class="text-center">
-            <p>ここにファイルをドロップしてください<br>または</p>
+            <p class="sp-none">ここにファイルをドロップしてください<br>または</p>
             <div id="inputFileWrap" class="mt-2">
               <input type="file" name="images" multiple class="form-control" id="id_images" accept="image/*">
               <div id="btnInputFile" class="btn btn-primary">ファイルを選択する</div>
-              <div id="btnChangeFile" class="btn btn-secondary" style="display: none;">ファイルを変更する</div>
+              <div id="btnChangeFile" class="btn btn-secondary" style="display: none;">ファイルを追加する</div>
+              <div id="btnResetFile" class="btn btn-danger" style="display: none;">全部リセットする</div>
             </div>
           </div>
         </div>
@@ -59,23 +60,39 @@
   </div>
 </div>
 
-
 <script>
   let uploadedFiles = [];
-
+  
   const fileArea = document.getElementById('dropArea');
   const fileInput = document.getElementById('id_images');
   const imagePreviewContainer = document.getElementById('image_preview');
   const btnInputFile = document.getElementById('btnInputFile');
   const btnChangeFile = document.getElementById('btnChangeFile');
+  const btnResetFile = document.getElementById('btnResetFile');
+
+  const toggleButtons = () => {
+    const isFileSelected = uploadedFiles.length > 0;
+    btnInputFile.style.display = isFileSelected ? 'none' : 'block';
+    btnChangeFile.style.display = isFileSelected ? 'block' : 'none';
+    btnResetFile.style.display = isFileSelected ? 'block' : 'none';
+  };
+
+  const resetFiles = () => {
+    uploadedFiles = [];
+    imagePreviewContainer.innerHTML = '';
+    fileInput.value = '';
+    toggleButtons();
+  };
 
   btnInputFile.addEventListener('click', function() {
     fileInput.click();
   });
-  
+
   btnChangeFile.addEventListener('click', function() {
     fileInput.click();
   });
+
+  btnResetFile.addEventListener('click', resetFiles);
 
   fileArea.addEventListener('dragover', function(e) {
     e.preventDefault();
@@ -92,42 +109,31 @@
     fileArea.classList.remove('dragover');
 
     var files = e.dataTransfer.files;
-
     if (files.length > 0) {
-      Array.from(files).forEach(file => {
-        if (!file.type.startsWith('image/')) {
-          return;
-        }
-
-        uploadedFiles.push(file);
-        displayPreviewImage(file, imagePreviewContainer);
-      });
-
-      if (uploadedFiles.length > 0) {
-        btnInputFile.style.display = 'none';
-        btnChangeFile.style.display = 'block';
-      }
+      handleFileUpload(files);
     }
   });
 
   fileInput.addEventListener('change', function(e) {
     const files = e.target.files;
+    if (files.length > 0) {
+      handleFileUpload(files);
+    }
+  }, false);
+
+  const handleFileUpload = (files) => {
     Array.from(files).forEach(file => {
       if (!file.type.startsWith('image/')) {
         return;
       }
-
+      console.log('Uploading file:', file);
       uploadedFiles.push(file);
       displayPreviewImage(file, imagePreviewContainer);
     });
+    toggleButtons();
+  };
 
-    if (uploadedFiles.length > 0) {
-      btnInputFile.style.display = 'none';
-      btnChangeFile.style.display = 'block';
-    }
-  }, false);
-
-  function displayPreviewImage(file, container) {
+  const displayPreviewImage = (file, container) => {
     const imgWrapper = document.createElement('div');
     imgWrapper.classList.add('img-thumbnail', 'm-2', 'position-relative');
 
@@ -151,26 +157,26 @@
     deleteButton.addEventListener('click', () => {
       uploadedFiles = uploadedFiles.filter(f => f !== file);
       container.removeChild(imgWrapper);
-      if (uploadedFiles.length === 0) {
-        btnInputFile.style.display = 'block';
-        btnChangeFile.style.display = 'none';
-      }
+      toggleButtons();
     });
 
     imgWrapper.appendChild(deleteButton);
-  }
+  };
 </script>
 
 <style>
   .text-center {
     text-align: center;
   }
+  #btnInputFile, #btnChangeFile, #btnResetFile {
+    width: 50%;
+    margin: auto;
+    padding: 5px;
+  }
+
   #btnInputFile {
     background: #7a615a;
     color: white;
-    width: 16vw;
-    margin: auto;
-    padding: 5px;
   }
 
   #inputFile {
@@ -189,7 +195,7 @@
     background: rgba(22, 165, 191, 0.6);
   }
 
-  .text_form{
+  .text_form {
     text-align: center;
   }
 
@@ -197,8 +203,9 @@
     width: 100%;
   }
 
-  #id_name {
+  #id_name,#id_price,#id_category {
     height: 40px;
+    padding: 0;
   }
 
   .list-btn {
@@ -226,8 +233,8 @@
 
   #image_preview {
     display: flex;
+    overflow: scroll;
     gap: 10px;
-    overflow: auto;
   }
 
   #image_preview .img-thumbnail {
@@ -238,8 +245,32 @@
 
   #existing_images {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
-    overflow: auto;
   }
+
+  div#menu-toggle {
+    display: none;
+  }
+
+  .img-thumbnail {
+    display: block;
+  }
+  
+  .hamburger {
+      position: static;
+  }
+
+  @media screen and (max-width: 900px) {
+  .bg-light {
+    width: 80%;
+  }
+  #btnInputFile, #btnChangeFile, #btnResetFile {
+    width: 60%;
+  }
+  .sp-none{
+    display: none;
+  }
+} 
 </style>
 {% endblock %}

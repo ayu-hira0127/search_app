@@ -16,6 +16,11 @@
     <link rel="stylesheet" href="{% static 'css/detail.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
+        select, #id_query {
+            border: solid 1px #AE8D84;
+            color: #AE8D84;
+        }
+
         .favorite-btn {
             background: none;
             border: none;
@@ -41,6 +46,26 @@
             width: 100%;
             height: auto;
         }
+
+    @media (max-width: 992px) {
+        ul.search_result {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        ul.search_result {
+            grid-template-columns:repeat(2, 1fr);
+        }
+        
+    }
+
+    @media (max-width: 500px) {
+        ul.search_result {
+            height: fit-content;
+        }
+        
+    }
     </style>
 </head>
 <body>

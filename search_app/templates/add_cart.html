@@ -14,7 +14,6 @@
                         <div class="product-images">
                             <img class="d-block w-100" src="{% if item.product.images.all.count > 0 %}{{ item.product.images.all.0.image.url }}{% else %}{% static 'img/noImg.jpg' %}{% endif %}" alt="{{ item.product.name }}">
                         </div>
-                        <!-- <h5><a href="{% url 'search_app:product_detail' item.product.id %}" class="text-dark">{{ item.product.name }}</a></h5> -->
                         <div>{{ item.product.name }}</div>
                         <div>¥{{ item.product.price|floatformat:0|intcomma }} x {{ item.quantity }}</div> 
                     </div>
@@ -29,7 +28,6 @@
         {% endfor %}
     </ul>
     <div class="fixed_btn">
-        <!-- 合計金額を表示 -->
         <div class="total-price mt-4 text-right">
             <h4>総合計: ¥{{ total_price|floatformat:0|intcomma }}</h4>
         </div>
@@ -41,16 +39,40 @@
 </div>
 <style>
     ul.list-group {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    list-style-type: none;
-    padding: 0;
-    margin: 30px auto 0 auto;
-    width: 80%;
-}
-div#menu-toggle {
-    display: none;
-}
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        list-style-type: none;
+        padding: 0;
+        margin: 30px auto 0 auto;
+        width: 80%;
+        padding-bottom: 150px; /* fixed button sectionの高さに合わせる */
+    }
+    div#menu-toggle {
+        display: none;
+    }
+
+    @media (max-width: 992px) {
+        ul.list-group {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        ul.list-group {
+            grid-template-columns:repeat(2, 1fr);
+        }
+        
+    }
+
+    @media (max-width: 500px) {
+        ul.list-group {
+            height: fit-content;
+        }
+        
+    }
+    .hamburger {
+        position: static;
+    }
 </style>
 {% endblock body %}

@@ -54,9 +54,9 @@ h4 {
     margin: 0;
 }
 
-h2{
+/* h2{
     font-size: 2vw;
-}
+} */
 .hamburger-menu {
     cursor: pointer; 
     display: flex;
@@ -68,6 +68,14 @@ h2{
     height: 250px;
     object-fit: cover;
 }
+
+@media (max-width: 500px) {
+    .product-images img {
+        height: 190px;
+    }
+}
+
+
 .goods_contents{
     height: fit-content;
     background: white;
@@ -115,11 +123,6 @@ h2{
 
 .search_contents {
     margin: 3vw auto;
-}
-
-select, #id_query {
-    border: solid 1px #AE8D84;
-    color: #AE8D84;
 }
 
 .pagination, .pagination a {

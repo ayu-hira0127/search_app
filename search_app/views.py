@@ -42,7 +42,7 @@ class ProductListView(LoginRequiredMixin, ListView):
     template_name = 'product_list.html'
     context_object_name = 'products'
 
-class ProductCreateView(LoginRequiredMixin, CreateView):
+class ProductCreateView(CreateView):
     model = Product
     form_class = ProductForm
     template_name = 'product_create.html'
@@ -51,9 +51,10 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user
         response = super().form_valid(form)
-        images = self.request.FILES.getlist('images')
-        for image in images:
-            ProductImage.objects.create(product=self.object, image=image)
+
+        for file in self.request.FILES.getlist('images'):
+            ProductImage.objects.create(product=self.object, image=file)
+
         return response
     
 class ProductDetailView(DetailView):
@@ -73,7 +74,7 @@ class ProductDetailView(DetailView):
         
         return context
 
-class ProductUpdateView(LoginRequiredMixin, UpdateView):
+class ProductUpdateView(UpdateView):
     model = Product
     form_class = ProductForm
     template_name = 'product_create.html'
@@ -81,15 +82,8 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         response = super().form_valid(form)
 
-        # 既存の画像を削除
-        if 'delete_image' in self.request.POST:
-            image_id = self.request.POST.get('delete_image')
-            ProductImage.objects.filter(id=image_id).delete()
-
-        # 新しい画像を保存
-        images = self.request.FILES.getlist('images')
-        for image in images:
-            ProductImage.objects.create(product=self.object, image=image)
+        for file in self.request.FILES.getlist('images'):
+            ProductImage.objects.create(product=self.object, image=file)
 
         return response
 
@@ -122,7 +116,7 @@ class SearchView(View):
         if form.is_valid():
             query = form.cleaned_data['query']
             if query:
-                results = results.filter(name__icontains(query))
+                results = results.filter(name__icontains=query)
         category_name = request.GET.get('category')
         if category_name:
             try:
@@ -141,6 +135,8 @@ class SearchView(View):
             results = results.order_by('price')
         elif sort_by == 'price_desc':
             results = results.order_by('-price')
+        else:
+            results = results.order_by('name')
         paginator = Paginator(results, 30)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
@@ -203,6 +199,7 @@ class PurchaseHistoryView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return PurchaseHistory.objects.filter(user=self.request.user).select_related('product')
 
+# エンドポイントを定義
 product_create = ProductCreateView.as_view()
 product_detail = ProductDetailView.as_view()
 product_update = ProductUpdateView.as_view()

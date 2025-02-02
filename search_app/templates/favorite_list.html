@@ -121,6 +121,28 @@
       height: 250px;
       object-fit: cover;
     }
+    @media (max-width: 992px) {
+        ul.search_result {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        ul.search_result {
+            grid-template-columns:repeat(2, 1fr);
+        }
+        
+    }
+
+    @media (max-width: 500px) {
+        ul.search_result {
+            height: fit-content;
+        }
+        
+    }
+    .hamburger {
+      position: static;
+  }
   </style>
 </body>
 </html>

@@ -98,10 +98,103 @@
             font-weight: bold;
             text-align: center;
         }
+        form#search-form {
+            padding-top: 26px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+        }
+
+        .menu {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 300px;
+            height: 100%;
+            background-color: #f9c5b8;
+            color: #333;
+            transition: left 0.3s ease;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 10;
+            display: none;
+        }
+
+        .menu.open {
+            left: 0;
+        }
+
+        .hamburger {
+            width: 30px;
+            cursor: pointer;
+            z-index: 20;
+            display: none;
+            position: absolute;
+            left: 20px;
+        }
+
+        .hamburger span {
+            display: block;
+            height: 3px;
+            width: 100%;
+            background-color: #ffffff;
+            margin: 5px 0;
+            transition: 0.4s;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        .menu ul {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 80px;
+        }
+
+        .menu li {
+            padding: 20px 0;
+            border-bottom: 1px solid #7a615a;
+            ;
+        }
+
+        .menu li a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+        }
+
+        @media (max-width: 700px) {
+            .hamburger {
+                display: block;
+            }
+            header .btn-secondary, header img:not(.hamburger-menu img), header a {
+                display: none;
+            }
+            header {
+                display: flex;
+                justify-content: flex-start;
+            }
+            .menu {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
 <header>
+
     <a href="{% url 'search_app:search_view' %}" class="btn-secondary">Top</a>
 
     {% if user.is_authenticated %}
@@ -125,13 +218,43 @@
     <div class="hamburger-menu" id="menu-toggle">
         <img src="{% static 'img/search.png' %}" alt="" style="width: 11%;">
     </div>
+
+    <div class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    
+    <div class="menu" id="menu">
+        <ul>
+            <li>
+                <a href="{% url 'search_app:search_view' %}">Top</a>
+            </li>
+            {% if user.is_authenticated %}
+                <li>
+                    <a href="{% url 'accounts:mypage' %}">Mypage</a>
+                </li>
+            {% else %}
+                <li>
+                    <a href="{% url 'accounts:login' %}">Login</a>
+                </li>
+            {% endif %}
+            <li>
+                <a href="{% url 'search_app:view_cart' %}">Cart</a>
+            </li>
+            <li>
+                <a href="{% url 'search_app:favorite_list' %}">Favorites</a>
+            </li>
+        </ul>
+    </div>
 </header>
+
 
 <!-- モーダル -->
 <div id="menu-modal" class="modal" style="display: none;">
     <div class="modal-content">
         <span class="close" id="close-menu">&times;</span>
-        <nav id="menu">
+        <nav id="search-menu">
             <form method="get" id="search-form">
                 <div class="search_contents">
                     <label for="query">検索キーワード</label>
@@ -155,8 +278,6 @@
                         <span>~</span>
                         <input type="number" name="max_price" id="max_price" min="0">
                     </div>
-                </div>
-                <div class="search_contents">
                 </div>
                 <div class="search_contents">
                     <label for="sort">並び替え</label>
@@ -214,6 +335,13 @@ document.getElementById('clear-btn').addEventListener('click', function() {
     document.getElementById('min_price').value = '';
     document.getElementById('max_price').value = '';
     document.getElementById('sort').selectedIndex = 0;
+});
+
+document.getElementById('hamburger').addEventListener('click', function() {
+    var menu = document.getElementById('menu');
+    var hamburger = document.getElementById('hamburger');
+    menu.classList.toggle('open');
+    hamburger.classList.toggle('active');
 });
 </script>
 
