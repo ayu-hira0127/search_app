@@ -5,9 +5,14 @@ from django.views.generic import CreateView, DetailView, UpdateView, DeleteView,
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.core.paginator import Paginator
-
+from django.views.generic.edit import CreateView
 from .models import Product, Category, Favorite, Cart, PurchaseHistory, ProductImage
 from .forms import ProductForm, SearchForm
+from django.conf import settings
+import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ExhibitedListView(LoginRequiredMixin, ListView):
     model = Product
@@ -41,49 +46,34 @@ class ProductListView(LoginRequiredMixin, ListView):
     model = Product
     template_name = 'product_list.html'
     context_object_name = 'products'
+    paginate_by = 12  # 1ページあたりの商品数を指定
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        paginator = Paginator(self.get_queryset(), self.paginate_by)
+        page = self.request.GET.get('page')
+        products = paginator.get_page(page)
+        context['products'] = products
+        return context
 
 class ProductCreateView(CreateView):
     model = Product
     form_class = ProductForm
     template_name = 'product_create.html'
-    success_url = reverse_lazy('search_app:exhibited_list')
 
     def form_valid(self, form):
-        form.instance.user = self.request.user
-        response = super().form_valid(form)
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user  # ログインユーザーを設定
+        self.object.save()
+        for uploaded_file in self.request.FILES.getlist('images'):
+            logger.debug(f"Uploading file: {uploaded_file.name}")
+            ProductImage.objects.create(product=self.object, image=uploaded_file)
+        return super().form_valid(form)
 
-        for file in self.request.FILES.getlist('images'):
-            ProductImage.objects.create(product=self.object, image=file)
-        
-        # フォームのデータをセッションに保存
-        self.request.session['product_data'] = {
-            'name': form.cleaned_data['name'],
-            'description': form.cleaned_data['description'],
-            'price': str(form.cleaned_data['price']),
-            'category': form.cleaned_data['category'].id
-        }
+    def get_success_url(self):
+        return reverse_lazy('search_app:product_detail', kwargs={'pk': self.object.pk})
 
-        return response
 
-    def get_initial(self):
-        initial = super().get_initial()
-        # セッションからデータを取得して初期値として設定
-        if 'product_data' in self.request.session:
-            product_data = self.request.session['product_data']
-            initial.update({
-                'name': product_data['name'],
-                'description': product_data['description'],
-                'price': product_data['price'],
-                'category': product_data['category']
-            })
-        return initial
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # 表示用のカテゴリーリストを追加（もし必要なら）
-        from .models import Category
-        context['categories'] = Category.objects.all()
-        return context
     
 class ProductDetailView(DetailView):
     model = Product
@@ -102,6 +92,7 @@ class ProductDetailView(DetailView):
         
         return context
 
+
 class ProductUpdateView(UpdateView):
     model = Product
     form_class = ProductForm
@@ -109,10 +100,8 @@ class ProductUpdateView(UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-
         for file in self.request.FILES.getlist('images'):
             ProductImage.objects.create(product=self.object, image=file)
-
         return response
 
     def get_context_data(self, **kwargs):
@@ -165,11 +154,12 @@ class SearchView(View):
             results = results.order_by('-price')
         else:
             results = results.order_by('name')
-        paginator = Paginator(results, 30)
+        paginator = Paginator(results, 12)  # 1ページあたりの商品数を指定
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-        
-        return render(request, self.template_name, {'form': form, 'page_obj': page_obj, 'results': results})
+
+        return render(request, self.template_name, {'form': form, 'page_obj': page_obj})
+    
 
 class AddToCartView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):

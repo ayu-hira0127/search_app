@@ -34,14 +34,16 @@ class ProductForm(forms.ModelForm):
         images = self.files.getlist('images')
         if len(images) > 10:
             raise forms.ValidationError('画像は最大10枚までアップロード可能です。')
-        
         for image in images:
-            if image.size > 5 * 1024 * 1024:  # 5MB以上の画像を弾く例
+            if image.size > 5 * 1024 * 1024:  # 5MB以上の画像を弾く
                 raise forms.ValidationError('画像サイズは5MB以下である必要があります。')
         return images
 
     def save(self, commit=True):
-        instance = super(ProductForm, self).save(commit=commit)
-        for uploaded_file in self.files.getlist('images'):
-            ProductImage.objects.create(product=instance, image=uploaded_file)
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        if 'images' in self.files:
+            for file in self.files.getlist('images'):
+                ProductImage.objects.create(product=instance, image=file)
         return instance

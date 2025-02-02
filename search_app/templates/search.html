@@ -47,6 +47,10 @@
             height: auto;
         }
 
+        .pagination{
+            margin: 16px 0;
+        }
+
     @media (max-width: 992px) {
         ul.search_result {
             grid-template-columns: repeat(3, 1fr);
@@ -99,7 +103,6 @@
                 {% if request.user.is_authenticated %}
                 <form class="favoriteForm" action="{% url 'search_app:favorite_product' product.pk %}" method="POST">
                     {% csrf_token %}
-                    <!-- お気に入りアイコン表示のために追加  -->
                     {% if product.is_favorited %}
                         <button type="submit" class="btn favorite-btn favorited">
                             <i class="favoriteIcon fas fa-heart favorited"></i>
@@ -116,6 +119,25 @@
             <li>No results found</li>
             {% endfor %}
         </ul>
+        
+        <!-- ページネーションリンクの追加 -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">前へ</a>
+                {% endif %}
+        
+                <span class="current">
+                     {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </span>
+        
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">次へ</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
     </section>
 
     <script>
