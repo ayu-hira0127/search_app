@@ -188,8 +188,8 @@
 <body>
     <div class="container">
         <div class="image-section">
-            {% if product.images.all %}
-                <img id="mainImage" class="main-image" src="{{ product.images.all.0.image.url }}" alt="{{ product.name }}">
+            {% if images %}
+                <img id="mainImage" class="main-image" src="{{ images.0.image.url }}" alt="{{ product.name }}">
             {% else %}
                 <img id="mainImage" class="main-image" src="{% static 'img/noImg.jpg' %}" alt="Default Image">
             {% endif %}
@@ -200,8 +200,8 @@
                 <i class="fas fa-chevron-right"></i>
             </button>
             <div class="thumbnail-images">
-                {% if product.images.all %}
-                    {% for image in product.images.all %}
+                {% if images %}
+                    {% for image in images %}
                         <img src="{{ image.image.url }}" alt="{{ product.name }}" onclick="setImage('{{ image.image.url }}', {{ forloop.counter0 }})">
                     {% endfor %}
                 {% else %}
@@ -222,7 +222,7 @@
                 <form class="favoriteForm" action="{% url 'search_app:favorite_product' product.pk %}" method="POST">
                     {% csrf_token %}
                     <button type="submit" class="btn favorite-btn">
-                        <i class="favoriteIcon {% if product.is_favorited %}fas fa-heart favorited{% else %}far fa-heart{% endif %}"></i>
+                        <i class="favoriteIcon {% if is_favorited %}fas fa-heart favorited{% else %}far fa-heart{% endif %}"></i>
                     </button>
                 </form>
             </div>
@@ -244,7 +244,7 @@
     <script>
         let currentImageIndex = 0;
         const images = [
-            {% for image in product.images.all %}
+            {% for image in images %}
                 '{{ image.image.url }}',
             {% endfor %}
         ];
